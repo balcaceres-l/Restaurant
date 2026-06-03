@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, timestamp, boolean, text, int } from "drizzle-orm/mysql-core";
+import { mysqlTable, varchar, timestamp, boolean, text, int,bigint } from "drizzle-orm/mysql-core";
 
 export const user = mysqlTable("user", {
     id: varchar("id", { length: 36 }).primaryKey(),
@@ -42,5 +42,5 @@ export const rateLimit = mysqlTable("rateLimit", {
     id: varchar("id", { length: 36 }).primaryKey(),
     key: text("key").notNull(),
     count: int("count").notNull(),
-    lastRequest: int("lastRequest").notNull(),
+    lastRequest: bigint("lastRequest", { mode: "number" }).notNull(),
 });
