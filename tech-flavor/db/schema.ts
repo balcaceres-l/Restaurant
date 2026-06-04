@@ -1,6 +1,6 @@
 // db/schema.ts
 import { mysqlTable, varchar, timestamp, boolean, text, int, bigint } from "drizzle-orm/mysql-core";
-
+import { sql } from "drizzle-orm";
 export const user = mysqlTable("user", {
     id: varchar("id", { length: 36 }).primaryKey(),
     name: text("name").notNull(),
@@ -54,4 +54,13 @@ export const rateLimit = mysqlTable("rateLimit", {
     key: text("key").notNull(),
     count: int("count").notNull(),
     lastRequest: bigint("lastRequest", { mode: "number" }).notNull(),
+});
+export const category = mysqlTable("category", {
+    id: varchar("id", { length: 36 }).primaryKey(),
+    name: varchar("name", { length: 255 }).notNull(),
+    description: text("description"),
+    imageBase64: text("imageBase64"), 
+    isActive: boolean("isActive").default(true).notNull(),
+    createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`).notNull(),
+    updatedAt: timestamp("updatedAt").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
