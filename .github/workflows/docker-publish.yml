@@ -26,7 +26,8 @@ jobs:
       - name: Build y Push Aplicación
         uses: docker/build-push-action@v6
         with:
-          context: ./tech-flavor  # Apuntamos a tu carpeta de código
+          context: ./tech-flavor
+          file: ./Dockerfile
           push: true
           tags: balcaceres/techflavor:latest
           cache-from: type=gha
