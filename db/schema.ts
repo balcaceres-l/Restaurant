@@ -75,3 +75,36 @@ export const product = mysqlTable("product", {
     createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`).notNull(),
     updatedAt: timestamp("updatedAt").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
+
+export const restaurantTable = mysqlTable("restaurantTable", {
+    id: varchar("id", { length: 36 }).primaryKey(),
+    number: int("number").notNull().unique(),
+    capacity: int("capacity").default(4).notNull(),
+    status: varchar("status", { length: 20 }).default("Libre").notNull(),
+    isActive: boolean("isActive").default(true).notNull(),
+    createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`).notNull(),
+    updatedAt: timestamp("updatedAt").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const order = mysqlTable("order", {
+    id: varchar("id", { length: 36 }).primaryKey(),
+    userId: varchar("userId", { length: 36 }).notNull().references(() => user.id),
+    tableId: varchar("tableId", { length: 36 }).references(() => restaurantTable.id),
+    deliveryType: varchar("deliveryType", { length: 20 }).notNull(),
+    status: varchar("status", { length: 20 }).default("Pendiente").notNull(),
+    total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+    paymentStatus: varchar("paymentStatus", { length: 20 }).default("Pendiente").notNull(),
+    paymentMethod: varchar("paymentMethod", { length: 20 }),
+    paidAt: timestamp("paidAt"),
+    createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`).notNull(),
+    updatedAt: timestamp("updatedAt").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const orderDetail = mysqlTable("orderDetail", {
+    id: varchar("id", { length: 36 }).primaryKey(),
+    orderId: varchar("orderId", { length: 36 }).notNull().references(() => order.id, { onDelete: "cascade" }),
+    productId: varchar("productId", { length: 36 }).notNull().references(() => product.id),
+    productName: varchar("productName", { length: 255 }).notNull(),
+    quantity: int("quantity").notNull(),
+    unitPrice: decimal("unitPrice", { precision: 10, scale: 2 }).notNull(),
+});
