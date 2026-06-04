@@ -23,9 +23,26 @@ function formatTime(date: Date) {
   return new Date(date).toLocaleTimeString("es-SV", { hour: "2-digit", minute: "2-digit" });
 }
 
+function elapsedMinutes(date: Date, now: number) {
+  return Math.max(0, Math.floor((now - new Date(date).getTime()) / 60000));
+}
+
+const URGENCY = {
+  normal: { badge: "bg-slate-100 text-slate-600", ring: "" },
+  warning: { badge: "bg-amber-100 text-amber-700", ring: "ring-1 ring-amber-300" },
+  late: { badge: "bg-red-100 text-red-700 animate-pulse", ring: "ring-2 ring-red-400" },
+};
+
+function urgencyLevel(minutes: number): keyof typeof URGENCY {
+  if (minutes >= 10) return "late";
+  if (minutes >= 5) return "warning";
+  return "normal";
+}
+
 export default function CocinaDashboard() {
   const [orders, setOrders] = useState<ActiveOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [now, setNow] = useState(() => Date.now());
   const [isPending, startTransition] = useTransition();
 
   const loadData = async () => {
@@ -41,8 +58,12 @@ export default function CocinaDashboard() {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 10000);
-    return () => clearInterval(interval);
+    const dataInterval = setInterval(loadData, 10000);
+    const clockInterval = setInterval(() => setNow(Date.now()), 30000);
+    return () => {
+      clearInterval(dataInterval);
+      clearInterval(clockInterval);
+    };
   }, []);
 
   const advance = (order: ActiveOrder) => {
@@ -75,20 +96,22 @@ export default function CocinaDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start">
           {orders.map((order) => {
             const isPendiente = order.status === ORDER_STATUS.PENDIENTE;
+            const minutes = elapsedMinutes(order.createdAt, now);
+            const urgency = URGENCY[urgencyLevel(minutes)];
             return (
-              <div key={order.id} className={`rounded-2xl border shadow-sm overflow-hidden ${isPendiente ? "bg-white border-slate-200" : "bg-orange-50 border-orange-200"}`}>
+              <div key={order.id} className={`rounded-2xl border shadow-sm overflow-hidden ${urgency.ring} ${isPendiente ? "bg-white border-slate-200" : "bg-orange-50 border-orange-200"}`}>
                 <div className={`p-3 text-white flex justify-between items-center ${isPendiente ? "bg-slate-800" : "bg-orange-500"}`}>
                   <span className="font-bold text-lg">#{order.id.slice(0, 6).toUpperCase()}</span>
                   <span className="text-sm font-medium">{formatTime(order.createdAt)}</span>
                 </div>
 
                 <div className="p-4">
-                  <div className="mb-4 flex items-center justify-between">
+                  <div className="mb-4 flex items-center justify-between gap-2">
                     <span className="inline-block px-3 py-1 rounded-md bg-slate-100 text-slate-700 text-sm font-bold">
                       {order.deliveryType}
                     </span>
-                    <span className={`text-xs font-bold uppercase ${isPendiente ? "text-slate-500" : "text-orange-600"}`}>
-                      {order.status}
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold tabular-nums ${urgency.badge}`} title="Tiempo en cola">
+                      {minutes} min
                     </span>
                   </div>
 

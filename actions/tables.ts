@@ -6,7 +6,7 @@ import { restaurantTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { ROLES } from "@/lib/constants/roles";
 import { TABLE_STATUS, TABLE_STATUS_LIST } from "@/lib/constants/tables";
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 async function requireSession(allowedRoles?: string[]) {
@@ -32,6 +32,28 @@ export async function getMesasDisponibles() {
     .from(restaurantTable)
     .where(eq(restaurantTable.isActive, true))
     .orderBy(asc(restaurantTable.number));
+}
+
+export async function getTableStats() {
+  await requireSession([ROLES.ADMIN]);
+
+  const [row] = await db
+    .select({
+      total: sql<number>`COUNT(*)`,
+      active: sql<number>`COALESCE(SUM(CASE WHEN ${restaurantTable.isActive} = true THEN 1 ELSE 0 END), 0)`,
+      occupied: sql<number>`COALESCE(SUM(CASE WHEN ${restaurantTable.status} = ${TABLE_STATUS.OCUPADA} THEN 1 ELSE 0 END), 0)`,
+    })
+    .from(restaurantTable);
+
+  const active = Number(row?.active ?? 0);
+  const occupied = Number(row?.occupied ?? 0);
+
+  return {
+    total: Number(row?.total ?? 0),
+    active,
+    occupied,
+    free: Math.max(0, active - occupied),
+  };
 }
 
 export async function createMesa(data: { number: number; capacity: number }) {

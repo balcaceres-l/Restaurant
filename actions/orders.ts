@@ -203,7 +203,12 @@ export async function getUnpaidOrders() {
   return await db
     .select()
     .from(order)
-    .where(eq(order.paymentStatus, PAYMENT_STATUS.PENDIENTE))
+    .where(
+      and(
+        eq(order.paymentStatus, PAYMENT_STATUS.PENDIENTE),
+        sql`${order.status} <> ${ORDER_STATUS.CANCELADO}`
+      )
+    )
     .orderBy(desc(order.createdAt));
 }
 
@@ -245,4 +250,93 @@ export async function registerPayment(id: string, paymentMethod: string) {
   revalidatePath("/admin");
   revalidatePath("/admin/ventas");
   return { success: true };
+}
+
+export async function cancelOrder(id: string) {
+  await requireSession([ROLES.CAJERO, ROLES.ADMIN]);
+
+  const [current] = await db.select().from(order).where(eq(order.id, id));
+  if (!current) {
+    return { success: false, error: "Pedido no encontrado" };
+  }
+  if (current.paymentStatus === PAYMENT_STATUS.PAGADO) {
+    return { success: false, error: "No se puede cancelar un pedido ya pagado" };
+  }
+  if (current.status === ORDER_STATUS.CANCELADO) {
+    return { success: false, error: "El pedido ya está cancelado" };
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(order)
+      .set({ status: ORDER_STATUS.CANCELADO, updatedAt: new Date() })
+      .where(eq(order.id, id));
+
+    if (current.tableId) {
+      await tx
+        .update(restaurantTable)
+        .set({ status: TABLE_STATUS.LIBRE, updatedAt: new Date() })
+        .where(eq(restaurantTable.id, current.tableId));
+    }
+  });
+
+  revalidatePath("/caja");
+  revalidatePath("/cocina");
+  revalidatePath("/admin");
+  revalidatePath("/admin/ventas");
+  return { success: true };
+}
+
+export async function getOrderDetails(id: string) {
+  await requireSession([ROLES.ADMIN, ROLES.CAJERO]);
+
+  const [found] = await db.select().from(order).where(eq(order.id, id));
+  if (!found) return null;
+
+  const items = await db
+    .select()
+    .from(orderDetail)
+    .where(eq(orderDetail.orderId, id));
+
+  return { ...found, items };
+}
+
+export async function getTopProductsToday() {
+  await requireSession([ROLES.ADMIN]);
+
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+
+  return await db
+    .select({
+      productName: orderDetail.productName,
+      quantity: sql<number>`CAST(SUM(${orderDetail.quantity}) AS UNSIGNED)`,
+      revenue: sql<string>`SUM(${orderDetail.quantity} * ${orderDetail.unitPrice})`,
+    })
+    .from(orderDetail)
+    .innerJoin(order, eq(orderDetail.orderId, order.id))
+    .where(and(eq(order.paymentStatus, PAYMENT_STATUS.PAGADO), gte(order.createdAt, startOfDay)))
+    .groupBy(orderDetail.productName)
+    .orderBy(desc(sql`SUM(${orderDetail.quantity})`))
+    .limit(5);
+}
+
+export async function getCashierDaySummary() {
+  await requireSession([ROLES.CAJERO, ROLES.ADMIN]);
+
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const [paidRow] = await db
+    .select({
+      collected: sql<string>`COALESCE(SUM(${order.total}), 0)`,
+      count: sql<number>`COUNT(*)`,
+    })
+    .from(order)
+    .where(and(eq(order.paymentStatus, PAYMENT_STATUS.PAGADO), gte(order.createdAt, startOfDay)));
+
+  return {
+    collectedToday: Number(paidRow?.collected ?? 0),
+    paidCount: Number(paidRow?.count ?? 0),
+  };
 }

@@ -2,6 +2,7 @@ export const ORDER_STATUS = Object.freeze({
   PENDIENTE: "Pendiente",
   PREPARANDO: "Preparando",
   ENTREGADO: "Entregado",
+  CANCELADO: "Cancelado",
 });
 
 export const DELIVERY_TYPE = Object.freeze({
