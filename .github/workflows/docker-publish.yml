@@ -26,7 +26,7 @@ jobs:
       - name: Build y Push Aplicación
         uses: docker/build-push-action@v6
         with:
-          context: ./tech-flavor
+          context: .
           file: ./Dockerfile
           push: true
           tags: balcaceres/techflavor:latest

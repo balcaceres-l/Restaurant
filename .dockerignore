@@ -4,5 +4,5 @@ node_modules
 .github
 *.log
 README.md
-tech-flavor/node_modules
-tech-flavor/.next
+.env
+.playwright-mcp

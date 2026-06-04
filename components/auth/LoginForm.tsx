@@ -122,7 +122,7 @@ export default function LoginForm() {
               </div>
             </div>
 
-            <div className="relative z-10 grid gap-4">
+            <div className="relative z-10 grid gap-4 mt-4">
               {features.map((feature) => (
                 <div
                   key={feature.title}
