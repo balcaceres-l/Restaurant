@@ -11,6 +11,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV DATABASE_URL="mysql://falso:falso@localhost:3306/falso"
+ENV BETTER_AUTH_SECRET="secreto_falso_para_build"
+ENV BETTER_AUTH_URL="http://localhost:3000"
 RUN npm run build
 
 FROM base AS runner
