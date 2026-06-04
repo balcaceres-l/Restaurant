@@ -1,5 +1,5 @@
 // db/schema.ts
-import { mysqlTable, varchar, timestamp, boolean, text, int, bigint } from "drizzle-orm/mysql-core";
+import { mysqlTable, varchar, timestamp, boolean, text, int, bigint, decimal  } from "drizzle-orm/mysql-core";
 import { sql } from "drizzle-orm";
 export const user = mysqlTable("user", {
     id: varchar("id", { length: 36 }).primaryKey(),
@@ -59,6 +59,17 @@ export const category = mysqlTable("category", {
     id: varchar("id", { length: 36 }).primaryKey(),
     name: varchar("name", { length: 255 }).notNull(),
     description: text("description"),
+    imageBase64: text("imageBase64"), 
+    isActive: boolean("isActive").default(true).notNull(),
+    createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`).notNull(),
+    updatedAt: timestamp("updatedAt").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+export const product = mysqlTable("product", {
+    id: varchar("id", { length: 36 }).primaryKey(),
+    name: varchar("name", { length: 255 }).notNull(),
+    description: text("description"),
+    price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+    categoryId: varchar("categoryId", { length: 36 }).notNull().references(() => category.id, { onDelete: "cascade" }),
     imageBase64: text("imageBase64"), 
     isActive: boolean("isActive").default(true).notNull(),
     createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`).notNull(),
