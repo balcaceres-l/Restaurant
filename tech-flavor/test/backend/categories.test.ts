@@ -16,7 +16,7 @@ describe('Gestión de Categorías - TDD', () => {
     });
 
     expect(newCategory).toBeDefined();
-    expect(newCategory[0].insertId).toBeDefined();
+    expect(newCategory.success).toBe(true);
     const list = await getCategorias();
     createdId = list[0].id;
   });

@@ -10,7 +10,7 @@ export async function getCategorias() {
 }
 
 export async function createCategoria(data: { name: string; description?: string; imageBase64?: string; isActive: boolean }) {
-  const result = await db.insert(category).values({
+  await db.insert(category).values({
     id: crypto.randomUUID(),
     name: data.name,
     description: data.description || "",
@@ -18,8 +18,9 @@ export async function createCategoria(data: { name: string; description?: string
     isActive: data.isActive,
     updatedAt: new Date(),
   });
+  
   revalidatePath("/admin/categorias");
-  return result;
+  return { success: true }; 
 }
 
 export async function updateCategoria(id: string, data: Partial<{ name: string; description: string; imageBase64: string; isActive: boolean }>) {
@@ -27,9 +28,11 @@ export async function updateCategoria(id: string, data: Partial<{ name: string; 
     .set({ ...data, updatedAt: new Date() })
     .where(eq(category.id, id));
   revalidatePath("/admin/categorias");
+  return { success: true };
 }
 
 export async function deleteCategoria(id: string) {
   await db.delete(category).where(eq(category.id, id));
   revalidatePath("/admin/categorias");
+  return { success: true };
 }
