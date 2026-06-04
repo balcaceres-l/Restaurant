@@ -1,4 +1,5 @@
-import { mysqlTable, varchar, timestamp, boolean, text, int,bigint } from "drizzle-orm/mysql-core";
+// db/schema.ts
+import { mysqlTable, varchar, timestamp, boolean, text, int, bigint } from "drizzle-orm/mysql-core";
 
 export const user = mysqlTable("user", {
     id: varchar("id", { length: 36 }).primaryKey(),
@@ -9,14 +10,20 @@ export const user = mysqlTable("user", {
     createdAt: timestamp("createdAt").notNull(),
     updatedAt: timestamp("updatedAt").notNull(),
     role: varchar("role", { length: 20 }), 
+    banned: boolean("banned"),
+    banReason: text("banReason"),
+    banExpires: timestamp("banExpires"),
 });
 
 export const session = mysqlTable("session", {
     id: varchar("id", { length: 36 }).primaryKey(),
     expiresAt: timestamp("expiresAt").notNull(),
+    token: varchar("token", { length: 255 }).notNull().unique(),
     ipAddress: text("ipAddress"),
     userAgent: text("userAgent"),
     userId: varchar("userId", { length: 36 }).notNull().references(() => user.id),
+    createdAt: timestamp("createdAt"),
+    updatedAt: timestamp("updatedAt"),
 });
 
 export const account = mysqlTable("account", {
@@ -29,6 +36,8 @@ export const account = mysqlTable("account", {
     idToken: text("idToken"),
     expiresAt: timestamp("expiresAt"),
     password: text("password"),
+    createdAt: timestamp("createdAt"),
+    updatedAt: timestamp("updatedAt"),
 });
 
 export const verification = mysqlTable("verification", {
@@ -36,6 +45,8 @@ export const verification = mysqlTable("verification", {
     identifier: text("identifier").notNull(),
     value: text("value").notNull(),
     expiresAt: timestamp("expiresAt").notNull(),
+    createdAt: timestamp("createdAt"),
+    updatedAt: timestamp("updatedAt"),
 });
 
 export const rateLimit = mysqlTable("rateLimit", {
