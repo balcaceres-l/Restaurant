@@ -21,12 +21,12 @@ const MENU_CONFIG = {
     { label: 'Usuarios', path: '/admin/usuarios', icon: 'ri-group-line' },
     { label: 'Categorías', path: '/admin/categorias', icon: 'ri-layout-grid-line' },
     { label: 'Productos', path: '/admin/productos', icon: 'ri-restaurant-line' },
+    { label: 'Mesas', path: '/admin/mesas', icon: 'ri-table-line' },
     { label: 'Ventas', path: '/admin/ventas', icon: 'ri-line-chart-line' },
   ],
   [ROLES.CAJERO]: [
     { label: 'Caja', path: '/caja', icon: 'ri-computer-line' },
-    { label: 'Nuevo Pedido', path: '/caja/nuevo-pedido', icon: 'ri-add-circle-line' },
-    { label: 'Historial', path: '/caja/historial', icon: 'ri-history-line' },
+    { label: 'Cobros', path: '/caja/cobros', icon: 'ri-bank-card-line' },
   ],
   [ROLES.COCINA]: [
     { label: 'Tablero Pedidos', path: '/cocina', icon: 'ri-restaurant-2-line' },
