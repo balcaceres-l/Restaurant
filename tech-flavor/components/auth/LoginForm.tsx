@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ROLE_HOME_PATHS } from "@/lib/constants/roles";
-import { signIn } from "../../lib/auth-client";
+import { signIn } from "@/lib/auth-client"; // Ajustado a alias de Next.js para mayor limpieza
 
 export default function LoginForm() {
   const router = useRouter();
