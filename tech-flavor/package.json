@@ -18,7 +18,7 @@
     "@upstash/redis": "^1.38.0",
     "better-auth": "^1.6.14",
     "drizzle-orm": "^0.45.2",
-    "kysely": "^0.29.2",
+    "kysely": "0.28.5", 
     "mysql2": "^3.22.4",
     "next": "16.2.7",
     "react": "19.2.4",
@@ -43,8 +43,5 @@
     "tsx": "^4.22.4",
     "typescript": "^5",
     "vitest": "^4.1.8"
-  },
-  "overrides": {
-    "kysely": "0.28.5"
   }
 }
