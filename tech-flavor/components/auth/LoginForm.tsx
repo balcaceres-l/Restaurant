@@ -2,9 +2,12 @@
 
 import type { FormEvent } from "react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ROLE_HOME_PATHS } from "@/lib/constants/roles";
 import { signIn } from "../../lib/auth-client";
 
 export default function LoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -15,15 +18,44 @@ export default function LoginForm() {
     setIsLoading(true);
     setError("");
 
-    const { data, error: signInError } = await signIn.email({
+    type SignInData =
+      | { user?: { role?: string } }
+      | { role?: string }
+      | { session?: { user?: { role?: string } } }
+      | undefined;
+
+    type SignInResult = { data?: SignInData; error?: { message?: string } };
+
+    const signInResultRaw = await signIn.email({
       email,
       password,
     });
 
+    const signInResult = signInResultRaw as unknown as SignInResult;
+
+    const data = signInResult?.data;
+    const signInError = signInResult?.error;
+
     if (signInError) {
       setError(signInError.message || "Error al iniciar sesión");
     } else {
-      console.log("Login exitoso", data);
+      let roleRaw: string | undefined = "";
+
+      if (data && "user" in data) {
+        roleRaw = data.user?.role;
+      } else if (data && "role" in data) {
+        roleRaw = data.role;
+      } else if (data && "session" in data) {
+        roleRaw = data.session?.user?.role;
+      }
+
+      const roleFromData = String(roleRaw ?? "");
+
+      const redirectPath =
+        ROLE_HOME_PATHS[roleFromData as keyof typeof ROLE_HOME_PATHS] ?? "/";
+
+      console.log("Login exitoso", data, "-> redirigiendo a", redirectPath);
+      router.push(redirectPath);
     }
 
     setIsLoading(false);
