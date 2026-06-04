@@ -2,10 +2,12 @@
 "use client";
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { authClient } from '@/lib/auth-client';
 import { ROLES, ROLE_HOME_PATHS } from '@/lib/constants/roles';
+import { authClient } from '@/lib/auth-client';
 
 type RoleValue = (typeof ROLES)[keyof typeof ROLES];
+
+type SidebarSession = Awaited<ReturnType<typeof authClient.useSession>>['data'];
 
 const ROLE_LABEL = {
   [ROLES.ADMIN]: 'Administración',
@@ -39,10 +41,9 @@ const getInitials = (name = '') => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
-export const Sidebar = () => {
+export const Sidebar = ({ session }: { session: SidebarSession }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = authClient.useSession();
 
   const user = session?.user as
     | { name?: string; role?: RoleValue }
