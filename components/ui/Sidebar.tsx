@@ -30,7 +30,7 @@ const MENU_CONFIG = {
   ],
   [ROLES.COCINA]: [
     { label: 'Tablero Pedidos', path: '/cocina', icon: 'ri-restaurant-2-line' },
-    { label: 'Historial', path: '/cocina/historial', icon: 'ri-history-line' },
+    
   ],
 };
 
