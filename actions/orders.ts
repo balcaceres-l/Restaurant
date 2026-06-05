@@ -169,7 +169,7 @@ export async function getSalesSummary() {
       count: sql<number>`COUNT(*)`,
     })
     .from(order)
-    .where(and(eq(order.paymentStatus, PAYMENT_STATUS.PAGADO), gte(order.createdAt, startOfDay)));
+    .where(and(eq(order.paymentStatus, PAYMENT_STATUS.PAGADO), gte(order.paidAt, startOfDay)));
 
   const [activeRow] = await db
     .select({ count: sql<number>`COUNT(*)` })
@@ -315,7 +315,7 @@ export async function getTopProductsToday() {
     })
     .from(orderDetail)
     .innerJoin(order, eq(orderDetail.orderId, order.id))
-    .where(and(eq(order.paymentStatus, PAYMENT_STATUS.PAGADO), gte(order.createdAt, startOfDay)))
+    .where(and(eq(order.paymentStatus, PAYMENT_STATUS.PAGADO), gte(order.paidAt, startOfDay)))
     .groupBy(orderDetail.productName)
     .orderBy(desc(sql`SUM(${orderDetail.quantity})`))
     .limit(5);
@@ -333,7 +333,7 @@ export async function getCashierDaySummary() {
       count: sql<number>`COUNT(*)`,
     })
     .from(order)
-    .where(and(eq(order.paymentStatus, PAYMENT_STATUS.PAGADO), gte(order.createdAt, startOfDay)));
+    .where(and(eq(order.paymentStatus, PAYMENT_STATUS.PAGADO), gte(order.paidAt, startOfDay)));
 
   return {
     collectedToday: Number(paidRow?.collected ?? 0),
